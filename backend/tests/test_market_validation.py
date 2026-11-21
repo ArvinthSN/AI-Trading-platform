@@ -48,3 +48,9 @@ def test_every_accepted_candle_interval_has_a_freshness_window() -> None:
     from app.domains.market.api.routes import INTERVAL_SECONDS, INTERVALS
 
     assert INTERVALS == set(INTERVAL_SECONDS)
+
+def test_agent_run_accepts_every_market_interval() -> None:
+    from app.domains.agents.schemas import AgentRunCreate
+
+    for interval in ("1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"):
+        assert AgentRunCreate(symbol="BTCUSDT", interval=interval).interval == interval
