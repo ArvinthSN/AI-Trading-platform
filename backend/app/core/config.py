@@ -32,8 +32,8 @@ class Settings(BaseSettings):
     coinbase_api_secret: str | None = None
     coinbase_rest_base_url: str = "https://api.exchange.coinbase.com"
     coinbase_ws_base_url: str = "wss://ws-feed.exchange.coinbase.com"
-    market_primary_provider: str = "kraken"
-    market_secondary_provider: str = "coinbase"
+    market_primary_provider: str = "binance"
+    market_secondary_provider: str = "kraken"
     market_global_provider: str = "coingecko"
     market_websocket_enabled: bool = True
     market_cache_enabled: bool = True
