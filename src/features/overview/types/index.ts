@@ -1,6 +1,6 @@
 export type MarketMode = "spot" | "futures";
 export type DataStatus = "loading" | "ready" | "error";
-export type Timeframe = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
+export type Timeframe = "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
 export type DateRange = "24H" | "7D" | "30D" | "YTD";
 
 export interface MarketQuote {
