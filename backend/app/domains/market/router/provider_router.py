@@ -39,7 +39,11 @@ class ProviderRouter:
             ),
         }
         self.providers: dict[str, MarketProvider] = {
-            "binance": BinanceSpotProvider(client, settings, self.health["binance"]),
+            "binance": BinanceSpotProvider(
+                client,
+                settings,
+                self.health["binance"],
+            ),
             "kraken": KrakenProvider(client, settings, self.health["kraken"]),
             "coinbase": CoinbaseExchangeProvider(
                 client,
@@ -161,7 +165,6 @@ class ProviderRouter:
         return [state.snapshot() for state in self.health.values()]
 
     def diagnostics(self) -> list[ProviderDiagnostic]:
-        binance_configured = True
         kraken_configured = bool(
             self.settings.kraken_api_key
             and self.settings.kraken_api_secret
@@ -178,7 +181,13 @@ class ProviderRouter:
             ProviderDiagnostic(
                 name="Binance Spot",
                 active=True,
-                capabilities=["tickers", "candles", "orderbook", "trades", "websocket"],
+                capabilities=[
+                    "tickers",
+                    "candles",
+                    "orderbook",
+                    "trades",
+                    "websocket",
+                ],
                 public_market_data=True,
                 authentication_required_for_public_data=False,
                 configuration_status="public",
