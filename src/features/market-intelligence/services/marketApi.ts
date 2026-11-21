@@ -129,7 +129,7 @@ export function getOrderBook(
 
 export function getTrades(
   symbol: string,
-  provider?: "kraken" | "coinbase",
+  provider?: "binance" | "kraken" | "coinbase",
   signal?: AbortSignal,
 ): Promise<ExchangeTrade[]> {
   const params = new URLSearchParams({ limit: "100" });
