@@ -6,6 +6,7 @@ import httpx
 from app.core.config import Settings
 from app.core.errors import ProviderUnavailable
 from app.domains.market.providers.base import MarketProvider
+from app.domains.market.providers.binance import BinanceSpotProvider
 from app.domains.market.providers.coinbase import CoinbaseExchangeProvider
 from app.domains.market.providers.kraken import KrakenProvider
 from app.domains.market.router.health import ProviderHealthState
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 class ProviderRouter:
     def __init__(self, client: httpx.AsyncClient, settings: Settings) -> None:
         self.settings = settings
-        self.health = {
+        self.health = {\n            "binance": ProviderHealthState(\n                name="Binance Spot",\n                routing_role="primary",\n            ),
             "kraken": ProviderHealthState(
                 name="Kraken",
                 routing_role="primary",
@@ -33,7 +34,7 @@ class ProviderRouter:
                 websocket_state="unsupported",
             ),
         }
-        self.providers: dict[str, MarketProvider] = {
+        self.providers: dict[str, MarketProvider] = {\n            "binance": BinanceSpotProvider(client, settings, self.health["binance"]),
             "kraken": KrakenProvider(client, settings, self.health["kraken"]),
             "coinbase": CoinbaseExchangeProvider(
                 client,
@@ -155,7 +156,7 @@ class ProviderRouter:
         return [state.snapshot() for state in self.health.values()]
 
     def diagnostics(self) -> list[ProviderDiagnostic]:
-        kraken_configured = bool(
+        binance_configured = True\n        kraken_configured = bool(
             self.settings.kraken_api_key
             and self.settings.kraken_api_secret
         )
