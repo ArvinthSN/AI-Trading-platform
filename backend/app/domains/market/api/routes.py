@@ -452,17 +452,24 @@ async def stream_market(
     await websocket.accept()
     try:
         try:
-            stream = KrakenTickerStream(get_settings())
+            stream = BinanceTickerStream(get_settings())
             async for ticker in stream.stream(normalized_symbol):
                 await websocket.send_json(
                     {"type": "market_update", "data": ticker.model_dump(mode="json")}
                 )
         except ProviderUnavailable:
-            stream = CoinbaseTickerStream(get_settings())
-            async for ticker in stream.stream(normalized_symbol):
-                await websocket.send_json(
-                    {"type": "market_update", "data": ticker.model_dump(mode="json")}
-                )
+            try:
+                stream = KrakenTickerStream(get_settings())
+                async for ticker in stream.stream(normalized_symbol):
+                    await websocket.send_json(
+                        {"type": "market_update", "data": ticker.model_dump(mode="json")}
+                    )
+            except ProviderUnavailable:
+                stream = CoinbaseTickerStream(get_settings())
+                async for ticker in stream.stream(normalized_symbol):
+                    await websocket.send_json(
+                        {"type": "market_update", "data": ticker.model_dump(mode="json")}
+                    )
     except WebSocketDisconnect:
         return
     except ProviderUnavailable:
