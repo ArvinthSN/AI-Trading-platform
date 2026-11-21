@@ -61,9 +61,9 @@ async def test_binance_rejects_rate_limited_requests_without_fabricating_data() 
 async def test_binance_candles_are_sorted_and_invalid_rows_are_discarded() -> None:
     now_ms = int(datetime.now(UTC).timestamp() * 1000)
     rows = [
-        [now_ms - 120000, "10", "12", "9", "11", "2", now_ms - 60001],
-        [now_ms - 60000, "11", "13", "10", "12", "3", now_ms + 59999],
-        [now_ms - 30000, "11", "8", "10", "12", "3", now_ms + 29999],
+        [now_ms - 120000, "10", "12", "9", "11", "2", now_ms - 60001, "20", 10, "1", "2", "0"],
+        [now_ms - 60000, "11", "13", "10", "12", "3", now_ms + 59999, "30", 12, "2", "3", "0"],
+        [now_ms - 30000, "11", "8", "10", "12", "3", now_ms + 29999, "30", 12, "2", "3", "0"],
     ]
 
     def handler(_: httpx.Request) -> httpx.Response:
