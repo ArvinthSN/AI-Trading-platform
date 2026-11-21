@@ -78,14 +78,14 @@ async def test_binance_candles_are_sorted_and_invalid_rows_are_discarded() -> No
     assert candles[0].is_closed is True
     assert candles[1].is_closed is False
 
-def test_provider_router_uses_binance_before_kraken() -> None:
+@pytest.mark.asyncio
+async def test_provider_router_uses_binance_before_kraken() -> None:
     from app.domains.market.router.provider_router import ProviderRouter
 
     settings = Settings()
-    async_client = httpx.AsyncClient()
-    router = ProviderRouter(async_client, settings)
-
-    assert [provider.name for provider in router.ordered_providers()] == [
-        "binance",
-        "kraken",
-    ]
+    async with httpx.AsyncClient() as async_client:
+        router = ProviderRouter(async_client, settings)
+        assert [provider.name for provider in router.ordered_providers()] == [
+            "binance",
+            "kraken",
+        ]
