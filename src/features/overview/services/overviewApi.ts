@@ -170,3 +170,32 @@ export async function setFavorite(symbol: string, favorite: boolean): Promise<vo
     );
   }
 }
+
+export function subscribeToMarketUpdates(
+  onQuote: (quote: MarketQuote) => void,
+  onStatus: (status: "connected" | "disconnected" | "error") => void,
+): () => void {
+  const configuredUrl = import.meta.env.VITE_MARKET_WS_URL as string | undefined;
+  const socketUrl = configuredUrl ? new URL(configuredUrl, window.location.href) : new URL("/api/market/stream", window.location.href);
+  socketUrl.protocol = socketUrl.protocol === "https:" ? "wss:" : "ws:";
+  let disposed = false;
+  let socket: WebSocket | null = null;
+  let retryTimer: number | undefined;
+  let retryDelay = 1000;
+  const connect = () => {
+    if (disposed) return;
+    try { socket = new WebSocket(socketUrl); }
+    catch { onStatus("error"); retryTimer = window.setTimeout(connect, retryDelay); retryDelay = Math.min(retryDelay * 2, 30000); return; }
+    socket.onopen = () => { retryDelay = 1000; onStatus("connected"); };
+    socket.onmessage = (event: MessageEvent<string>) => {
+      try {
+        const message = JSON.parse(event.data) as { type?: string; data?: { symbol: string; price: number; change_24h: number; updated_at: string } };
+        if (message.type === "market_update" && message.data) onQuote({ symbol: message.data.symbol, price: message.data.price, change24h: message.data.change_24h, updatedAt: message.data.updated_at, favorite: false });
+      } catch { onStatus("error"); }
+    };
+    socket.onerror = () => onStatus("error");
+    socket.onclose = () => { onStatus("disconnected"); if (!disposed) { retryTimer = window.setTimeout(connect, retryDelay); retryDelay = Math.min(retryDelay * 2, 30000); } };
+  };
+  connect();
+  return () => { disposed = true; if (retryTimer !== undefined) window.clearTimeout(retryTimer); socket?.close(); };
+}
