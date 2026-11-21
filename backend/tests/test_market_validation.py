@@ -42,3 +42,9 @@ def test_binance_symbol_and_interval_inputs_are_rejected(symbol: str, interval: 
     assert symbol.isascii()
     if interval not in {"1m", "5m", "15m", "1h", "4h", "1d"}:
         assert interval == "8h"
+
+
+def test_every_accepted_candle_interval_has_a_freshness_window() -> None:
+    from app.domains.market.api.routes import INTERVALS, INTERVAL_SECONDS
+
+    assert INTERVALS == set(INTERVAL_SECONDS)
