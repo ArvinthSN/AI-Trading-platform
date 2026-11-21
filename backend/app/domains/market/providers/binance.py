@@ -1,6 +1,7 @@
 import logging
 from datetime import UTC, datetime
 from time import perf_counter
+from time import perf_counter
 from typing import Any
 
 import httpx
@@ -57,6 +58,7 @@ class BinanceSpotProvider(MarketProvider):
         return payload
 
     async def get_instruments(self) -> list[Instrument]:
+        started = perf_counter()
         try:
             records = await self._source.instruments()
         except ProviderRateLimited:
@@ -66,10 +68,11 @@ class BinanceSpotProvider(MarketProvider):
         except ProviderUnavailable:
             self._health.record_error()
             raise
-        self._health.record_success(0)
+        self._health.record_success((perf_counter() - started) * 1000)
         return records
 
     async def get_tickers(self) -> list[Ticker]:
+        started = perf_counter()
         try:
             records = await self._source.tickers()
         except ProviderRateLimited:
@@ -79,10 +82,11 @@ class BinanceSpotProvider(MarketProvider):
         except ProviderUnavailable:
             self._health.record_error()
             raise
-        self._health.record_success(0)
+        self._health.record_success((perf_counter() - started) * 1000)
         return records
 
     async def get_candles(self, symbol: str, interval: str, limit: int) -> list[Candle]:
+        started = perf_counter()
         try:
             records = await self._source.candles(symbol, interval, min(max(limit, 1), 1000))
         except ProviderRateLimited:
@@ -92,7 +96,7 @@ class BinanceSpotProvider(MarketProvider):
         except ProviderUnavailable:
             self._health.record_error()
             raise
-        self._health.record_success(0)
+        self._health.record_success((perf_counter() - started) * 1000)
         return records
 
     async def get_orderbook(self, symbol: str, depth: int = 25) -> dict[str, Any]:
