@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 class ProviderRouter:
     def __init__(self, client: httpx.AsyncClient, settings: Settings) -> None:
         self.settings = settings
-        self.health = {\n            "binance": ProviderHealthState(\n                name="Binance Spot",\n                routing_role="primary",\n            ),
+        self.health = {
+            "binance": ProviderHealthState(
+                name="Binance Spot",
+                routing_role="primary",
+            ),
             "kraken": ProviderHealthState(
                 name="Kraken",
                 routing_role="primary",
@@ -34,7 +38,8 @@ class ProviderRouter:
                 websocket_state="unsupported",
             ),
         }
-        self.providers: dict[str, MarketProvider] = {\n            "binance": BinanceSpotProvider(client, settings, self.health["binance"]),
+        self.providers: dict[str, MarketProvider] = {
+            "binance": BinanceSpotProvider(client, settings, self.health["binance"]),
             "kraken": KrakenProvider(client, settings, self.health["kraken"]),
             "coinbase": CoinbaseExchangeProvider(
                 client,
@@ -156,7 +161,8 @@ class ProviderRouter:
         return [state.snapshot() for state in self.health.values()]
 
     def diagnostics(self) -> list[ProviderDiagnostic]:
-        binance_configured = True\n        kraken_configured = bool(
+        binance_configured = True
+        kraken_configured = bool(
             self.settings.kraken_api_key
             and self.settings.kraken_api_secret
         )
@@ -169,6 +175,14 @@ class ProviderRouter:
             and str(self.settings.coingecko_api_key).startswith("CG-")
         )
         return [
+            ProviderDiagnostic(
+                name="Binance Spot",
+                active=True,
+                capabilities=["tickers", "candles", "orderbook", "trades", "websocket"],
+                public_market_data=True,
+                authentication_required_for_public_data=False,
+                configuration_status="public",
+            ),
             ProviderDiagnostic(
                 name="Kraken",
                 active=True,
