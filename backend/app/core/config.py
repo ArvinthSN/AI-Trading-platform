@@ -37,7 +37,6 @@ class Settings(BaseSettings):
     market_global_provider: str = "coingecko"
     market_websocket_enabled: bool = True
     market_cache_enabled: bool = True
-    coingecko_api_key: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
