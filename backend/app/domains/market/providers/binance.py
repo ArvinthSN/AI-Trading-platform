@@ -88,7 +88,11 @@ class BinanceSpotProvider(MarketProvider):
             "/api/v3/depth",
             {"symbol": symbol.upper(), "limit": min(max(depth, 5), 5000)},
         )
-        if not isinstance(payload, dict) or not isinstance(payload.get("bids"), list) or not isinstance(payload.get("asks"), list):
+        if (
+            not isinstance(payload, dict)
+            or not isinstance(payload.get("bids"), list)
+            or not isinstance(payload.get("asks"), list)
+        ):
             self._health.record_error()
             raise ProviderUnavailable("Binance", "Order book response has an unexpected shape.")
         return {
