@@ -1,0 +1,42 @@
+{
+  "name": "nextrade-ai-overview",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "backend:dev": "backend\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000",
+    "backend:test": "backend\\.venv\\Scripts\\python.exe -m pytest -q backend\\tests",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "lightweight-charts": "^5.0.8",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2",
+    "react-simple-maps": "^5.0.5",
+    "tailwindcss": "^4.1.13",
+    "world-atlas": "^2.0.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "eslint": "^9.34.0",
+    "eslint-plugin-react-hooks": "^6.1.1",
+    "globals": "^16.4.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "jsdom": "^26.1.0",
+    "typescript-eslint": "^8.42.0",
+    "typescript": "~5.9.2",
+    "vite": "^7.1.4",
+    "vitest": "^4.1.12"
+  }
+}
