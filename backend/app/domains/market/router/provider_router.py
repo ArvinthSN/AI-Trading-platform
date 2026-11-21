@@ -26,7 +26,7 @@ class ProviderRouter:
             ),
             "kraken": ProviderHealthState(
                 name="Kraken",
-                routing_role="primary",
+                routing_role="secondary",
             ),
             "coinbase": ProviderHealthState(
                 name="Coinbase Exchange",
