@@ -13,6 +13,7 @@ from app.core.database import get_database_session
 from app.core.errors import ProviderUnavailable
 from app.core.http import get_http_client
 from app.core.research import OpenAIResearchProvider, ResearchEvidence
+from app.domains.market.data_sources.binance_stream import BinanceTickerStream
 from app.domains.market.data_sources.coinbase_ticker_stream import CoinbaseTickerStream
 from app.domains.market.data_sources.kraken_candle_stream import KrakenCandleStream
 from app.domains.market.data_sources.kraken_ticker_stream import KrakenTickerStream
@@ -105,7 +106,7 @@ async def list_candles(
     symbol: str = Query(pattern=r"^[A-Za-z0-9]{5,30}$"),
     interval: str = Query(default="1h"),
     limit: int = Query(default=500, ge=1, le=1000),
-    provider: str | None = Query(default=None, pattern=r"^(kraken|coinbase)$"),
+    provider: str | None = Query(default=None, pattern=r"^(binance|kraken|coinbase)$"),
 ) -> CandleResponse:
     if interval not in INTERVALS:
         raise HTTPException(status_code=422, detail="Unsupported candle interval.")
