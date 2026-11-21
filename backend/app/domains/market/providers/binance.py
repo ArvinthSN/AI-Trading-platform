@@ -59,6 +59,10 @@ class BinanceSpotProvider(MarketProvider):
     async def get_instruments(self) -> list[Instrument]:
         try:
             records = await self._source.instruments()
+        except ProviderRateLimited:
+            self._health.record_error()
+            self._health.rate_limited = True
+            raise
         except ProviderUnavailable:
             self._health.record_error()
             raise
@@ -68,6 +72,10 @@ class BinanceSpotProvider(MarketProvider):
     async def get_tickers(self) -> list[Ticker]:
         try:
             records = await self._source.tickers()
+        except ProviderRateLimited:
+            self._health.record_error()
+            self._health.rate_limited = True
+            raise
         except ProviderUnavailable:
             self._health.record_error()
             raise
@@ -77,6 +85,10 @@ class BinanceSpotProvider(MarketProvider):
     async def get_candles(self, symbol: str, interval: str, limit: int) -> list[Candle]:
         try:
             records = await self._source.candles(symbol, interval, min(max(limit, 1), 1000))
+        except ProviderRateLimited:
+            self._health.record_error()
+            self._health.rate_limited = True
+            raise
         except ProviderUnavailable:
             self._health.record_error()
             raise
