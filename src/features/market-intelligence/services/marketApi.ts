@@ -119,7 +119,7 @@ export function getProviderDiagnostics(signal?: AbortSignal): Promise<ProviderDi
 
 export function getOrderBook(
   symbol: string,
-  provider?: "kraken" | "coinbase",
+  provider?: "binance" | "kraken" | "coinbase",
   signal?: AbortSignal,
 ): Promise<OrderBook> {
   const params = new URLSearchParams({ depth: "25" });
