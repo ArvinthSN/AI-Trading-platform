@@ -45,6 +45,6 @@ def test_binance_symbol_and_interval_inputs_are_rejected(symbol: str, interval: 
 
 
 def test_every_accepted_candle_interval_has_a_freshness_window() -> None:
-    from app.domains.market.api.routes import INTERVALS, INTERVAL_SECONDS
+    from app.domains.market.api.routes import INTERVAL_SECONDS, INTERVALS
 
     assert INTERVALS == set(INTERVAL_SECONDS)
