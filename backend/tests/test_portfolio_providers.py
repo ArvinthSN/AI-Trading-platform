@@ -134,3 +134,65 @@ async def test_paper_engine_requires_both_url_and_service_token() -> None:
         assert provider.configured is False
         with pytest.raises(ProviderUnavailable, match="not configured"):
             await provider.get("summary", "user-123")
+
+
+@pytest.mark.asyncio
+async def test_binance_authentication_failure_is_reported_as_unavailable() -> None:
+    settings = Settings(
+        binance_api_key="read-only-key",
+        binance_api_secret="test-secret",
+        binance_api_base_url="https://binance.test",
+    )
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(401, json={"code": -2015, "msg": "Invalid API-key"})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = BinancePortfolioProvider(client, settings)
+        with pytest.raises(ProviderUnavailable, match="request failed"):
+            await provider.account()
+
+
+@pytest.mark.asyncio
+async def test_binance_rejects_malformed_account_payload() -> None:
+    settings = Settings(
+        binance_api_key="read-only-key",
+        binance_api_secret="test-secret",
+        binance_api_base_url="https://binance.test",
+    )
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"accountType": "SPOT"})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = BinancePortfolioProvider(client, settings)
+        with pytest.raises(ProviderUnavailable, match="invalid account payload"):
+            await provider.account()
+
+
+@pytest.mark.asyncio
+async def test_paper_provider_rejects_unknown_resource_before_network_request() -> None:
+    settings = Settings(
+        paper_trading_engine_url="https://paper.test",
+        paper_trading_engine_token="engine-token",
+    )
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        raise AssertionError("Unsupported resource must not make a request")
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = PaperPortfolioProvider(client, settings)
+        with pytest.raises(ProviderUnavailable, match="Unsupported"):
+            await provider.get("../orders", "user-123")
+
+
+@pytest.mark.asyncio
+async def test_paper_provider_rejects_missing_authenticated_user() -> None:
+    settings = Settings(
+        paper_trading_engine_url="https://paper.test",
+        paper_trading_engine_token="engine-token",
+    )
+    async with httpx.AsyncClient() as client:
+        provider = PaperPortfolioProvider(client, settings)
+        with pytest.raises(ProviderUnavailable, match="user identifier"):
+            await provider.get("summary", " ")
