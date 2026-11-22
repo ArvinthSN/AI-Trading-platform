@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Activity, ArrowDownRight, ArrowUpRight, CalendarDays, ChevronLeft, ChevronRight,
-  CircleHelp, Clock3, Download, RefreshCw, ShieldCheck, Wallet,
+  CircleHelp, Clock3, RefreshCw, ShieldCheck, Wallet,
 } from "lucide-react";
 import { getPortfolioAnalysis } from "../services/portfolioApi";
 import type {
