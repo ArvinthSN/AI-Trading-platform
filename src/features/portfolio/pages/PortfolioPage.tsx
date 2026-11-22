@@ -77,7 +77,7 @@ function PerformanceChart({ points, currency }: { points: PortfolioPoint[]; curr
           setHovered(nearest);
         }} />
       </svg>
-      <div className="pf-chart-axis"><span>{shortDate(points[0]!.timestamp)}</span><span>{shortDate(points[Math.floor(points.length / 2)].timestamp)}</span><span>{shortDate(points[points.length - 1]!.timestamp)}</span></div>
+      <div className="pf-chart-axis"><span>{shortDate(points[0]!.timestamp)}</span><span>{shortDate(points[Math.floor(points.length / 2)]!.timestamp)}</span><span>{shortDate(points[points.length - 1]!.timestamp)}</span></div>
     </> : <div className="pf-empty-chart"><Activity size={22}/><strong>Performance history unavailable</strong><span>Connect a portfolio data source to display verified value history.</span></div>}
   </div>;
 }
@@ -111,7 +111,7 @@ function PnlCalendar({ days, selectedDate, onSelect, month, onMonthChange, curre
 function HoldingsTable({ holdings, currency }: { holdings: PortfolioHolding[]; currency: string }) {
   if (!holdings.length) return <div className="pf-empty-state">Holdings will appear when an account or paper portfolio is connected.</div>;
   return <div className="pf-table-scroll"><table className="pf-table"><thead><tr><th>Asset</th><th>Quantity</th><th>Avg. entry</th><th>Price</th><th>Market value</th><th>Unrealized P&amp;L</th><th>Allocation</th></tr></thead><tbody>
-    {holdings.map((item) => <tr key={item.symbol}><td><strong>{item.asset}</strong><small>{item.symbol}</small></td><td>{item.quantity.toLocaleString()}</td><td>{money(item.averageEntryPrice, currency)}</td><td>{money(item.currentPrice, currency)}</td><td>{money(item.marketValue, currency)}</td><td className={item.unrealizedPnl >= 0 ? "is-positive" : "is-negative"}>{money(item.unrealizedPnl, currency)}<small>{percent(item.unrealizedPnlPct)}</small></td><td><div className="pf-allocation"><span>{item.allocationPct.toFixed(1)}%</span><i><b style={{ width: `${Math.min(Math.max(item.allocationPct, 0), 100)}%` }}/></i></div></td></tr>)}
+    {holdings.map((item) => <tr key={item.symbol}><td><strong>{item.asset}</strong><small>{item.symbol}</small></td><td>{item.quantity.toLocaleString()}</td><td>{money(item.averageEntryPrice, currency)}</td><td>{money(item.currentPrice, currency)}</td><td>{money(item.marketValue, currency)}</td><td className={item.unrealizedPnl == null ? "" : item.unrealizedPnl >= 0 ? "is-positive" : "is-negative"}>{money(item.unrealizedPnl, currency)}<small>{percent(item.unrealizedPnlPct)}</small></td><td><div className="pf-allocation"><span>{item.allocationPct == null ? "—" : `${item.allocationPct.toFixed(1)}%`}</span><i><b style={{ width: `${Math.min(Math.max(item.allocationPct ?? 0, 0), 100)}%` }}/></i></div></td></tr>)}
   </tbody></table></div>;
 }
 
@@ -182,7 +182,7 @@ export function PortfolioPage() {
         <PerformanceChart points={data?.performance ?? []} currency={currency}/>
       </Panel>
       <Panel title="Portfolio allocation" subtitle="Distribution by asset">
-        {data?.holdings.length ? <div className="pf-allocation-list">{data.holdings.slice().sort((a,b) => b.allocationPct-a.allocationPct).map((holding) => <div key={holding.symbol}><div><strong>{holding.asset}</strong><span>{holding.allocationPct.toFixed(1)}%</span></div><i><b style={{width:`${Math.min(Math.max(holding.allocationPct,0),100)}%`}}/></i><small>{money(holding.marketValue,currency)}</small></div>)}</div> : <div className="pf-empty-state pf-allocation-empty">Allocation will appear when verified holdings are available.</div>}
+        {data?.holdings.length ? <div className="pf-allocation-list">{data.holdings.slice().sort((a,b) => (b.allocationPct ?? 0)-(a.allocationPct ?? 0)).map((holding) => <div key={holding.symbol}><div><strong>{holding.asset}</strong><span>{holding.allocationPct == null ? "—" : `${holding.allocationPct.toFixed(1)}%`}</span></div><i><b style={{width:`${Math.min(Math.max(holding.allocationPct ?? 0,0),100)}%`}}/></i><small>{money(holding.marketValue,currency)}</small></div>)}</div> : <div className="pf-empty-state pf-allocation-empty">Allocation will appear when verified holdings are available.</div>}
       </Panel>
       <Panel title="Daily P&L calendar" subtitle="Select a day to inspect its activity" className="pf-calendar-panel" action={<span className="pf-subtle-label"><CalendarDays size={13}/> Daily breakdown</span>}>
         <PnlCalendar days={data?.calendar ?? []} selectedDate={selectedDate} onSelect={setSelectedDate} month={month} onMonthChange={setMonth} currency={currency}/>
