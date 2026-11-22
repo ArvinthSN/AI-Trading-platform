@@ -4,12 +4,12 @@ export type PortfolioRange = "7D" | "30D" | "90D" | "1Y" | "ALL";
 
 export interface PortfolioSummary {
   currency: string;
-  investedCapital: number;
-  currentValue: number;
-  realizedPnl: number;
-  unrealizedPnl: number;
-  totalReturnPct: number;
-  maxDrawdownPct: number;
+  investedCapital: number | null;
+  currentValue: number | null;
+  realizedPnl: number | null;
+  unrealizedPnl: number | null;
+  totalReturnPct: number | null;
+  maxDrawdownPct: number | null;
   asOf: string;
 }
 
@@ -23,12 +23,12 @@ export interface PortfolioHolding {
   asset: string;
   symbol: string;
   quantity: number;
-  averageEntryPrice: number;
-  currentPrice: number;
-  marketValue: number;
-  unrealizedPnl: number;
-  unrealizedPnlPct: number;
-  allocationPct: number;
+  averageEntryPrice: number | null;
+  currentPrice: number | null;
+  marketValue: number | null;
+  unrealizedPnl: number | null;
+  unrealizedPnlPct: number | null;
+  allocationPct: number | null;
 }
 
 export interface DailyPortfolioPnl {
