@@ -1,7 +1,6 @@
 import logging
 from datetime import UTC, datetime
 from time import perf_counter
-from time import perf_counter
 from typing import Any
 
 import httpx
