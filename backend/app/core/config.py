@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     binance_api_base_url: str = "https://api.binance.com"
     binance_ws_base_url: str = "wss://stream.binance.com:9443"
     binance_request_timeout_seconds: float = 10
+    # Account keys must be read-only and supplied through deployment secrets, never frontend storage.
+    binance_api_key: str | None = None
+    binance_api_secret: str | None = None
+    binance_recv_window_ms: int = 5000
     coingecko_api_base_url: str = "https://api.coingecko.com/api/v3"
     coingecko_api_key: str | None = None
     fear_greed_api_url: str = "https://api.alternative.me/fng/"
