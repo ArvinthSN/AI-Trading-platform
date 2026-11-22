@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import time
+from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
 
 import httpx
@@ -56,6 +57,22 @@ class BinancePortfolioProvider:
             raise ProviderUnavailable(
                 "Binance account", "Binance returned an invalid account payload."
             )
+        for balance in payload["balances"]:
+            if not isinstance(balance, dict) or not isinstance(balance.get("asset"), str):
+                raise ProviderUnavailable(
+                    "Binance account", "Binance returned an invalid balance entry."
+                )
+            for field in ("free", "locked"):
+                try:
+                    amount = Decimal(str(balance.get(field, "0")))
+                except InvalidOperation as error:
+                    raise ProviderUnavailable(
+                        "Binance account", "Binance returned a non-numeric balance."
+                    ) from error
+                if not amount.is_finite() or amount < 0:
+                    raise ProviderUnavailable(
+                        "Binance account", "Binance returned an invalid balance amount."
+                    )
         return payload
 
     async def trades(self, symbol: str, limit: int = 500) -> list[dict]:
@@ -64,5 +81,32 @@ class BinancePortfolioProvider:
             {"symbol": symbol.upper(), "limit": str(min(max(limit, 1), 1000))},
         )
         if not isinstance(payload, list):
-            raise ProviderUnavailable("Binance account", "Binance returned invalid trade history.")
+            raise ProviderUnavailable(
+                "Binance account", "Binance returned invalid trade history."
+            )
+        required = ("id", "time", "qty", "price", "isBuyer")
+        for trade in payload:
+            if not isinstance(trade, dict) or any(key not in trade for key in required):
+                raise ProviderUnavailable(
+                    "Binance account", "Binance returned an invalid trade entry."
+                )
+            try:
+                quantity = Decimal(str(trade["qty"]))
+                price = Decimal(str(trade["price"]))
+                timestamp = int(trade["time"])
+            except (InvalidOperation, TypeError, ValueError) as error:
+                raise ProviderUnavailable(
+                    "Binance account", "Binance returned invalid trade values."
+                ) from error
+            if (
+                not quantity.is_finite()
+                or quantity <= 0
+                or not price.is_finite()
+                or price <= 0
+                or timestamp <= 0
+                or not isinstance(trade["isBuyer"], bool)
+            ):
+                raise ProviderUnavailable(
+                    "Binance account", "Binance returned invalid trade values."
+                )
         return payload
