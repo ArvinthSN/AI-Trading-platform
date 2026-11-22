@@ -6,7 +6,7 @@ import {
 import { getPortfolioAnalysis } from "../services/portfolioApi";
 import type {
   AgentConsistency, DailyPortfolioPnl, PortfolioAnalysisData, PortfolioHolding,
-  PortfolioPoint, PortfolioRange, PortfolioTrade,
+  PortfolioPoint, PortfolioRange, PortfolioSource, PortfolioTrade,
 } from "../types";
 import "./portfolio.css";
 
@@ -136,6 +136,7 @@ function RecentTrades({ trades, currency }: { trades: PortfolioTrade[]; currency
 
 export function PortfolioPage() {
   const [range, setRange] = useState<PortfolioRange>("30D");
+  const [source, setSource] = useState<PortfolioSource>("paper");
   const [data, setData] = useState<PortfolioAnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -146,11 +147,11 @@ export function PortfolioPage() {
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError(null);
-    getPortfolioAnalysis(range, controller.signal).then(setData).catch((reason: unknown) => {
+    getPortfolioAnalysis(range, source, controller.signal).then(setData).catch((reason: unknown) => {
       if (!(reason instanceof DOMException && reason.name === "AbortError")) setError(reason instanceof Error ? reason.message : "Portfolio data could not be loaded.");
     }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [range, refreshKey]);
+  }, [range, source, refreshKey]);
 
   const currency = data?.summary?.currency ?? "USD";
   const selectedDay = data?.calendar.find((day) => day.date.slice(0, 10) === selectedDate);
@@ -161,11 +162,11 @@ export function PortfolioPage() {
   return <main className="portfolio-page">
     <header className="pf-page-header">
       <div><div className="pf-eyebrow"><Wallet size={13}/> PORTFOLIO INTELLIGENCE</div><h1>Portfolio Analysis</h1><p>Performance, allocation and trading consistency in one view.</p></div>
-      <div className="pf-header-actions"><span className="pf-data-status"><i/>{loading ? "Syncing data" : hasAnyData ? "Live portfolio data" : "Awaiting portfolio connection"}</span><button className="pf-refresh" onClick={() => setRefreshKey((key) => key + 1)} disabled={loading}><RefreshCw size={14} className={loading ? "pf-spin" : ""}/> Refresh</button></div>
+      <div className="pf-header-actions"><div className="pf-source-switch" role="group" aria-label="Portfolio source"><button className={source === "paper" ? "active" : ""} onClick={() => setSource("paper")}>Paper Trading</button><button className={source === "binance" ? "active" : ""} onClick={() => setSource("binance")}>Binance</button></div><span className="pf-data-status"><i/>{loading ? "Syncing data" : hasAnyData ? "Live portfolio data" : "Awaiting portfolio connection"}</span><button className="pf-refresh" onClick={() => setRefreshKey((key) => key + 1)} disabled={loading}><RefreshCw size={14} className={loading ? "pf-spin" : ""}/> Refresh</button></div>
     </header>
 
     {error && <div className="pf-error" role="alert">{error}</div>}
-    {!hasAnyData && !loading && <div className="pf-notice"><CircleHelp size={17}/><div><strong>Portfolio data is not connected yet</strong><span>The dashboard is ready, but the portfolio API is not available. No sample balances, P&amp;L or chart history are being displayed.</span></div></div>}
+    {!hasAnyData && !loading && <div className="pf-notice"><CircleHelp size={17}/><div><strong>Portfolio data is not connected yet</strong><span>The {source === "paper" ? "Paper Trading" : "Binance"} source is not available yet. No sample balances, P&amp;L or chart history are displayed.</span></div></div>}
 
     <section className="pf-metrics">
       <Metric label="Current portfolio value" value={money(summary?.currentValue, currency)} hint={summary ? `As of ${new Date(summary.asOf).toLocaleString()}` : undefined} icon={<Wallet size={16}/>} />
