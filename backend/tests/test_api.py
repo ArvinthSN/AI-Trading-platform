@@ -73,3 +73,43 @@ def test_portfolio_binance_summary_requires_authentication() -> None:
         response = client.get("/api/v1/portfolio/summary?source=binance")
     assert response.status_code == 503
     assert "Authentication provider" in response.json()["detail"]
+
+
+def test_portfolio_sources_report_unconfigured_providers_without_fake_data() -> None:
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser("test-user")
+    try:
+        with TestClient(app) as client:
+            response = client.get("/api/v1/portfolio/sources")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["mode"] == "read_only"
+    assert payload["sources"] == [
+        {"id": "paper", "label": "Paper Trading", "configured": False},
+        {"id": "binance", "label": "Binance Spot", "configured": False},
+    ]
+
+
+def test_binance_portfolio_summary_is_unavailable_without_server_credentials() -> None:
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser("test-user")
+    try:
+        with TestClient(app) as client:
+            response = client.get("/api/v1/portfolio/summary?source=binance")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 503
+    assert "credentials are not configured" in response.json()["detail"]
+
+
+def test_portfolio_rejects_unknown_source() -> None:
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser("test-user")
+    try:
+        with TestClient(app) as client:
+            response = client.get("/api/v1/portfolio/summary?source=live")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 422
