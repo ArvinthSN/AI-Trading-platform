@@ -4,6 +4,9 @@
 .pf-page-header h1{margin:8px 0 4px;font-size:clamp(25px,3vw,34px);line-height:1.1;letter-spacing:-1.1px;font-weight:760}
 .pf-page-header p{margin:0;color:#8290a0;font-size:13px}
 .pf-header-actions{display:flex;align-items:center;gap:10px}
+.pf-source-switch{display:flex;gap:3px;padding:3px;border:1px solid #e5eaf0;border-radius:8px;background:#fff}
+.pf-source-switch button{border:0;border-radius:5px;padding:6px 9px;background:transparent;color:#788696;font-size:9px;font-weight:650;cursor:pointer}
+.pf-source-switch button.active{background:#eaf6f0;color:#16885f}
 .pf-data-status{display:flex;align-items:center;gap:7px;color:#748294;font-size:11px;white-space:nowrap}
 .pf-data-status i{width:7px;height:7px;border-radius:50%;background:#b6c0ca}
 .pf-refresh{display:flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #e0e6ec;border-radius:8px;background:#fff;color:#435264;font-size:11px;font-weight:650;cursor:pointer}
