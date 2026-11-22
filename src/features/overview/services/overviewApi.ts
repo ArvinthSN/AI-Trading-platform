@@ -6,7 +6,7 @@ import type {
   OverviewSnapshot,
   Timeframe,
 } from "../types";
-import type { AgentRosterEntry } from "../../agents/types";
+import type { AgentDashboard } from "../../agents/types";
 import type { MarketNewsResponse, Ticker, Watchlist } from "../../market-intelligence/types";
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
@@ -70,10 +70,17 @@ export async function getOverviewSnapshot(
     optional(request<MarketNewsResponse>("/market/news", { signal }), {
       status: "unavailable" as const, source: null, updated_at: null, items: [], reason: "News service unavailable.",
     }),
-    optional(request<{
-      agents?: AgentRosterEntry[];
-      performance?: Record<string, unknown>;
-    }>("/agents/dashboard", { signal }), { agents: [] }),
+    optional(request<AgentDashboard>("/agents/dashboard", { signal }), {
+      status: "unavailable" as const,
+      runs: [],
+      agents: [],
+      latest_decision: null,
+      latest_execution: null,
+      latest_evidence: [],
+      latest_events: [],
+      performance: {},
+      reason: "Agent service unavailable.",
+    }),
   ]);
 
   const favorites = new Set(
