@@ -75,3 +75,59 @@ async def test_paper_portfolio_fails_closed_when_engine_is_not_configured() -> N
         provider = PaperPortfolioProvider(client, Settings())
         with pytest.raises(ProviderUnavailable, match="not configured"):
             await provider.get("summary", "user-123")
+
+
+@pytest.mark.asyncio
+async def test_binance_account_rejects_negative_or_non_numeric_balances() -> None:
+    settings = Settings(
+        binance_api_key="read-only-key",
+        binance_api_secret="test-secret",
+        binance_api_base_url="https://binance.test",
+    )
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={"balances": [{"asset": "BTC", "free": "-1", "locked": "0"}]},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = BinancePortfolioProvider(client, settings)
+        with pytest.raises(ProviderUnavailable, match="invalid balance amount"):
+            await provider.account()
+
+
+@pytest.mark.asyncio
+async def test_binance_trade_history_rejects_invalid_trade_values() -> None:
+    settings = Settings(
+        binance_api_key="read-only-key",
+        binance_api_secret="test-secret",
+        binance_api_base_url="https://binance.test",
+    )
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json=[{
+                "id": 1,
+                "time": 1763750000000,
+                "qty": "0.1",
+                "price": "NaN",
+                "isBuyer": True,
+            }],
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        provider = BinancePortfolioProvider(client, settings)
+        with pytest.raises(ProviderUnavailable, match="invalid trade values"):
+            await provider.trades("BTCUSDT")
+
+
+@pytest.mark.asyncio
+async def test_paper_engine_requires_both_url_and_service_token() -> None:
+    settings = Settings(paper_trading_engine_url="https://paper.test")
+    async with httpx.AsyncClient() as client:
+        provider = PaperPortfolioProvider(client, settings)
+        assert provider.configured is False
+        with pytest.raises(ProviderUnavailable, match="not configured"):
+            await provider.get("summary", "user-123")
