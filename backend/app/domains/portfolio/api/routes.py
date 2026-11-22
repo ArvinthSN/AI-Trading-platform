@@ -125,7 +125,6 @@ async def portfolio_holdings(
     user: CurrentUser,
     source: Source = "paper",
 ) -> list[dict]:
-    del user
     paper, binance = _providers(request)
     try:
         if source == "paper":
@@ -164,7 +163,6 @@ async def portfolio_calendar(
     source: Source = "paper",
     range: Range = Query(default="30D"),
 ) -> list[dict]:
-    del user
     if source == "binance":
         raise HTTPException(
             status_code=503,
@@ -190,7 +188,6 @@ async def portfolio_trades(
     limit: Annotated[int, Query(ge=1, le=100)] = 12,
     symbol: Annotated[str | None, Query(pattern=r"^[A-Z0-9]{5,30}$")] = None,
 ) -> list[dict]:
-    del user
     paper, binance = _providers(request)
     try:
         if source == "paper":
