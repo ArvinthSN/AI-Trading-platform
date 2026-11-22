@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
     timeout = httpx.Timeout(settings.binance_request_timeout_seconds)
     async with httpx.AsyncClient(timeout=timeout) as client:
         app.state.http_client = client
+        app.state.settings = settings
         app.state.market_router = ProviderRouter(client, settings)
         app.state.agent_event_hub = AgentEventHub()
         app.state.agent_simulator = None

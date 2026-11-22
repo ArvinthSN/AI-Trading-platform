@@ -12,7 +12,7 @@ from app.domains.market.schemas.market import Candle, Instrument, Ticker
 
 logger = logging.getLogger(__name__)
 SYMBOL_PATTERN = re.compile(r"^[A-Z0-9]{5,30}$")
-INTERVALS = {"1m", "5m", "15m", "1h", "4h", "1d"}
+INTERVALS = {"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}
 
 
 class BinanceMarketDataSource:

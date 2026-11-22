@@ -87,14 +87,22 @@ function useTickerFeed() {
     let socket: WebSocket | null = null;
     let retryTimer: number | undefined;
     let retryDelay = 1000;
+    // FastAPI exposes the market stream outside the versioned REST router.
     const url = import.meta.env.VITE_MARKET_WS_URL
       ? new URL(import.meta.env.VITE_MARKET_WS_URL, window.location.href)
-      : new URL("/api/v1/market/stream", window.location.href);
+      : new URL("/api/market/stream", window.location.href);
     url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
 
     const connect = () => {
       if (disposed) return;
-      socket = new WebSocket(url);
+      try {
+        socket = new WebSocket(url);
+      } catch {
+        setStreamStatus("error");
+        retryTimer = window.setTimeout(connect, retryDelay);
+        retryDelay = Math.min(retryDelay * 2, 30000);
+        return;
+      }
       socket.onopen = () => {
         retryDelay = 1000;
         setStreamStatus("connected");

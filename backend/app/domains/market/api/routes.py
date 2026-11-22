@@ -13,6 +13,8 @@ from app.core.database import get_database_session
 from app.core.errors import ProviderUnavailable
 from app.core.http import get_http_client
 from app.core.research import OpenAIResearchProvider, ResearchEvidence
+from app.domains.market.data_sources.binance_klines import BinanceKlineStream
+from app.domains.market.data_sources.binance_stream import BinanceTickerStream
 from app.domains.market.data_sources.coinbase_ticker_stream import CoinbaseTickerStream
 from app.domains.market.data_sources.kraken_candle_stream import KrakenCandleStream
 from app.domains.market.data_sources.kraken_ticker_stream import KrakenTickerStream
@@ -46,9 +48,11 @@ INTERVAL_SECONDS = {
     "1m": 60,
     "5m": 300,
     "15m": 900,
+    "30m": 1800,
     "1h": 3600,
     "4h": 14400,
     "1d": 86400,
+    "1w": 604800,
 }
 
 
@@ -103,7 +107,7 @@ async def list_candles(
     symbol: str = Query(pattern=r"^[A-Za-z0-9]{5,30}$"),
     interval: str = Query(default="1h"),
     limit: int = Query(default=500, ge=1, le=1000),
-    provider: str | None = Query(default=None, pattern=r"^(kraken|coinbase)$"),
+    provider: str | None = Query(default=None, pattern=r"^(binance|kraken|coinbase)$"),
 ) -> CandleResponse:
     if interval not in INTERVALS:
         raise HTTPException(status_code=422, detail="Unsupported candle interval.")
@@ -219,7 +223,7 @@ async def get_orderbook(
     symbol: str,
     request: Request,
     depth: int = Query(default=25, ge=1, le=500),
-    provider: str | None = Query(default=None, pattern=r"^(kraken|coinbase)$"),
+    provider: str | None = Query(default=None, pattern=r"^(binance|kraken|coinbase)$"),
 ) -> dict:
     return await _provider_router(request).get_orderbook(symbol, depth, provider)
 
@@ -229,7 +233,7 @@ async def get_trades(
     symbol: str,
     request: Request,
     limit: int = Query(default=100, ge=1, le=1000),
-    provider: str | None = Query(default=None, pattern=r"^(kraken|coinbase)$"),
+    provider: str | None = Query(default=None, pattern=r"^(binance|kraken|coinbase)$"),
 ) -> list[dict]:
     return await _provider_router(request).get_trades(symbol, limit, provider)
 
@@ -448,17 +452,24 @@ async def stream_market(
     await websocket.accept()
     try:
         try:
-            stream = KrakenTickerStream(get_settings())
+            stream = BinanceTickerStream(get_settings())
             async for ticker in stream.stream(normalized_symbol):
                 await websocket.send_json(
                     {"type": "market_update", "data": ticker.model_dump(mode="json")}
                 )
         except ProviderUnavailable:
-            stream = CoinbaseTickerStream(get_settings())
-            async for ticker in stream.stream(normalized_symbol):
-                await websocket.send_json(
-                    {"type": "market_update", "data": ticker.model_dump(mode="json")}
-                )
+            try:
+                stream = KrakenTickerStream(get_settings())
+                async for ticker in stream.stream(normalized_symbol):
+                    await websocket.send_json(
+                        {"type": "market_update", "data": ticker.model_dump(mode="json")}
+                    )
+            except ProviderUnavailable:
+                stream = CoinbaseTickerStream(get_settings())
+                async for ticker in stream.stream(normalized_symbol):
+                    await websocket.send_json(
+                        {"type": "market_update", "data": ticker.model_dump(mode="json")}
+                    )
     except WebSocketDisconnect:
         return
     except ProviderUnavailable:
@@ -477,14 +488,24 @@ async def stream_candles(
         return
     await websocket.accept()
     try:
-        stream = KrakenCandleStream(get_settings())
-        async for candle in stream.stream(normalized_symbol, interval):
-            await websocket.send_json(
-                {
-                    "type": "candle_update",
-                    "data": candle.model_dump(mode="json"),
-                }
-            )
+        try:
+            stream = BinanceKlineStream(get_settings())
+            async for candle in stream.stream(normalized_symbol, interval):
+                await websocket.send_json(
+                    {
+                        "type": "candle_update",
+                        "data": candle.model_dump(mode="json"),
+                    }
+                )
+        except ProviderUnavailable:
+            stream = KrakenCandleStream(get_settings())
+            async for candle in stream.stream(normalized_symbol, interval):
+                await websocket.send_json(
+                    {
+                        "type": "candle_update",
+                        "data": candle.model_dump(mode="json"),
+                    }
+                )
     except WebSocketDisconnect:
         return
     except ProviderUnavailable:

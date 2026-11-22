@@ -198,7 +198,7 @@ class PerformanceCriticOutput(BaseModel):
 
 class AgentRunCreate(BaseModel):
     symbol: str = Field(pattern=r"^[A-Za-z0-9-]{5,30}$")
-    interval: str = Field(default="1h", pattern=r"^(1m|5m|15m|1h|4h|1d)$")
+    interval: str = Field(default="1h", pattern=r"^(1m|5m|15m|30m|1h|4h|1d|1w)$")
 
 
 class AgentRunResponse(BaseModel):

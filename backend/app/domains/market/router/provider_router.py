@@ -6,6 +6,7 @@ import httpx
 from app.core.config import Settings
 from app.core.errors import ProviderUnavailable
 from app.domains.market.providers.base import MarketProvider
+from app.domains.market.providers.binance import BinanceSpotProvider
 from app.domains.market.providers.coinbase import CoinbaseExchangeProvider
 from app.domains.market.providers.kraken import KrakenProvider
 from app.domains.market.router.health import ProviderHealthState
@@ -19,9 +20,13 @@ class ProviderRouter:
     def __init__(self, client: httpx.AsyncClient, settings: Settings) -> None:
         self.settings = settings
         self.health = {
+            "binance": ProviderHealthState(
+                name="Binance Spot",
+                routing_role="primary",
+            ),
             "kraken": ProviderHealthState(
                 name="Kraken",
-                routing_role="primary",
+                routing_role="secondary",
             ),
             "coinbase": ProviderHealthState(
                 name="Coinbase Exchange",
@@ -34,6 +39,11 @@ class ProviderRouter:
             ),
         }
         self.providers: dict[str, MarketProvider] = {
+            "binance": BinanceSpotProvider(
+                client,
+                settings,
+                self.health["binance"],
+            ),
             "kraken": KrakenProvider(client, settings, self.health["kraken"]),
             "coinbase": CoinbaseExchangeProvider(
                 client,
@@ -45,12 +55,12 @@ class ProviderRouter:
     def ordered_providers(self) -> list[MarketProvider]:
         configured_primary = self.settings.market_primary_provider.lower()
         configured_secondary = self.settings.market_secondary_provider.lower()
+        # Preserve configured priority, then try every registered public provider.
+        # This gives Binance -> Kraken -> Coinbase failover by default without
+        # silently dropping the tertiary provider from the recovery path.
         names = [configured_primary, configured_secondary]
-        return [
-            self.providers[name]
-            for name in names
-            if name in self.providers
-        ]
+        names.extend(name for name in self.providers if name not in names)
+        return [self.providers[name] for name in names if name in self.providers]
 
     async def get_instruments(self) -> list[Instrument]:
         for provider in self.ordered_providers():
@@ -168,6 +178,20 @@ class ProviderRouter:
             and str(self.settings.coingecko_api_key).startswith("CG-")
         )
         return [
+            ProviderDiagnostic(
+                name="Binance Spot",
+                active=True,
+                capabilities=[
+                    "tickers",
+                    "candles",
+                    "orderbook",
+                    "trades",
+                    "websocket",
+                ],
+                public_market_data=True,
+                authentication_required_for_public_data=False,
+                configuration_status="public",
+            ),
             ProviderDiagnostic(
                 name="Kraken",
                 active=True,

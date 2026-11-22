@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     binance_api_base_url: str = "https://api.binance.com"
     binance_ws_base_url: str = "wss://stream.binance.com:9443"
     binance_request_timeout_seconds: float = 10
+    # Keep account keys read-only and load them from deployment secrets.
+    # Never store exchange credentials in frontend code or browser storage.
+    binance_api_key: str | None = None
+    binance_api_secret: str | None = None
+    binance_recv_window_ms: int = 5000
     coingecko_api_base_url: str = "https://api.coingecko.com/api/v3"
     coingecko_api_key: str | None = None
     fear_greed_api_url: str = "https://api.alternative.me/fng/"
@@ -32,12 +37,11 @@ class Settings(BaseSettings):
     coinbase_api_secret: str | None = None
     coinbase_rest_base_url: str = "https://api.exchange.coinbase.com"
     coinbase_ws_base_url: str = "wss://ws-feed.exchange.coinbase.com"
-    market_primary_provider: str = "kraken"
-    market_secondary_provider: str = "coinbase"
+    market_primary_provider: str = "binance"
+    market_secondary_provider: str = "kraken"
     market_global_provider: str = "coingecko"
     market_websocket_enabled: bool = True
     market_cache_enabled: bool = True
-    coingecko_api_key: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
