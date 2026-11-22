@@ -1,10 +1,21 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 PortfolioSource = Literal["paper", "binance"]
+
+
+class PortfolioSourceItem(BaseModel):
+    id: PortfolioSource
+    label: str
+    configured: bool
+
+
+class PortfolioSources(BaseModel):
+    mode: Literal["read_only"]
+    sources: list[PortfolioSourceItem]
 
 
 class PortfolioSummary(BaseModel):
@@ -12,6 +23,9 @@ class PortfolioSummary(BaseModel):
     currency: str = "USDT"
     invested_capital: float | None = None
     current_value: float | None = None
+    asset_count: int | None = None
+    valuation_status: Literal["available", "unavailable"] | None = None
+    reason: str | None = None
     realized_pnl: float | None = None
     unrealized_pnl: float | None = None
     total_return_pct: float | None = None
