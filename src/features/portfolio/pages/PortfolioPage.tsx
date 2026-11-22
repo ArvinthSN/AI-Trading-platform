@@ -73,11 +73,11 @@ function PerformanceChart({ points, currency }: { points: PortfolioPoint[]; curr
           if (!bounds) return;
           const x = ((event.clientX - bounds.left) / bounds.width) * 768;
           let nearest = 0;
-          plotted.forEach((point, index) => { if (Math.abs(point.x - x) < Math.abs(plotted[nearest].x - x)) nearest = index; });
+          plotted.forEach((point, index) => { if (Math.abs(point.x - x) < Math.abs(plotted[nearest]!.x - x)) nearest = index; });
           setHovered(nearest);
         }} />
       </svg>
-      <div className="pf-chart-axis"><span>{shortDate(points[0].timestamp)}</span><span>{shortDate(points[Math.floor(points.length / 2)].timestamp)}</span><span>{shortDate(points.at(-1)!.timestamp)}</span></div>
+      <div className="pf-chart-axis"><span>{shortDate(points[0]!.timestamp)}</span><span>{shortDate(points[Math.floor(points.length / 2)].timestamp)}</span><span>{shortDate(points[points.length - 1]!.timestamp)}</span></div>
     </> : <div className="pf-empty-chart"><Activity size={22}/><strong>Performance history unavailable</strong><span>Connect a portfolio data source to display verified value history.</span></div>}
   </div>;
 }
