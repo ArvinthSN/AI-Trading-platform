@@ -14,7 +14,7 @@ class PaperPortfolioProvider:
 
     @property
     def configured(self) -> bool:
-        return bool(self._url)
+        return bool(self._url and self._token)
 
     async def get(
         self,
