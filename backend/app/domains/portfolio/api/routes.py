@@ -9,7 +9,6 @@ from app.core.database import get_database_session
 from app.core.errors import ProviderUnavailable
 from app.domains.portfolio.providers.binance import BinancePortfolioProvider
 from app.domains.portfolio.providers.paper_engine import PaperPortfolioProvider
-from app.domains.portfolio.schemas import PortfolioUnavailable
 
 router = APIRouter()
 DbSession = Annotated[AsyncSession, Depends(get_database_session)]
