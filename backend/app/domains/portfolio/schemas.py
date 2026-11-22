@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 PortfolioSource = Literal["paper", "binance"]
@@ -71,4 +71,3 @@ class PortfolioTrade(BaseModel):
 class PortfolioUnavailable(BaseModel):
     source: PortfolioSource
     status: Literal["unavailable"] = "unavailable"
-    reason: str
