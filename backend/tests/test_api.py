@@ -59,3 +59,17 @@ def test_scenario_simulation_does_not_create_fake_results() -> None:
         app.dependency_overrides.clear()
     assert response.status_code == 503
     assert "No simulated result was created" in response.json()["detail"]
+
+
+def test_portfolio_sources_require_authentication() -> None:
+    with TestClient(app) as client:
+        response = client.get("/api/v1/portfolio/sources")
+    assert response.status_code == 503
+    assert "Authentication provider" in response.json()["detail"]
+
+
+def test_portfolio_binance_summary_requires_authentication() -> None:
+    with TestClient(app) as client:
+        response = client.get("/api/v1/portfolio/summary?source=binance")
+    assert response.status_code == 503
+    assert "Authentication provider" in response.json()["detail"]
