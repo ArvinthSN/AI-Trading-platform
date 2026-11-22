@@ -28,7 +28,6 @@ def _raise_unavailable(error: ProviderUnavailable) -> None:
 
 @router.get("/sources")
 async def portfolio_sources(request: Request, user: CurrentUser) -> dict:
-    del user
     paper, binance = _providers(request)
     return {
         "mode": "read_only",
@@ -45,11 +44,10 @@ async def portfolio_summary(
     user: CurrentUser,
     source: Source = "paper",
 ) -> dict:
-    del user
     paper, binance = _providers(request)
     if source == "paper":
         try:
-            result = await paper.get("summary")
+            result = await paper.get("summary", user.subject)
             if not isinstance(result, dict):
                 raise ProviderUnavailable(
                     "Paper Trading Engine", "Paper summary response must be an object."
@@ -93,7 +91,6 @@ async def portfolio_performance(
     source: Source = "paper",
     range: Range = Query(default="30D"),
 ) -> list[dict]:
-    del user
     if source == "binance":
         raise HTTPException(
             status_code=503,
@@ -104,7 +101,7 @@ async def portfolio_performance(
         )
     paper, _ = _providers(request)
     try:
-        result = await paper.get("performance", {"range": range})
+        result = await paper.get("performance", user.subject, {"range": range})
         if not isinstance(result, list):
             raise ProviderUnavailable(
                 "Paper Trading Engine", "Paper performance response must be a list."
@@ -124,7 +121,7 @@ async def portfolio_holdings(
     paper, binance = _providers(request)
     try:
         if source == "paper":
-            result = await paper.get("holdings")
+            result = await paper.get("holdings", user.subject)
             if not isinstance(result, list):
                 raise ProviderUnavailable(
                     "Paper Trading Engine", "Paper holdings response must be a list."
@@ -167,7 +164,7 @@ async def portfolio_calendar(
         )
     paper, _ = _providers(request)
     try:
-        result = await paper.get("calendar", {"range": range})
+        result = await paper.get("calendar", user.subject, {"range": range})
         if not isinstance(result, list):
             raise ProviderUnavailable(
                 "Paper Trading Engine", "Paper calendar response must be a list."
@@ -189,7 +186,7 @@ async def portfolio_trades(
     paper, binance = _providers(request)
     try:
         if source == "paper":
-            result = await paper.get("trades", {"limit": str(limit)})
+            result = await paper.get("trades", user.subject, {"limit": str(limit)})
             if not isinstance(result, list):
                 raise ProviderUnavailable(
                     "Paper Trading Engine", "Paper trades response must be a list."
