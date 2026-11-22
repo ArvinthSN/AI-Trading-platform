@@ -55,12 +55,12 @@ class ProviderRouter:
     def ordered_providers(self) -> list[MarketProvider]:
         configured_primary = self.settings.market_primary_provider.lower()
         configured_secondary = self.settings.market_secondary_provider.lower()
+        # Preserve configured priority, then try every registered public provider.
+        # This gives Binance -> Kraken -> Coinbase failover by default without
+        # silently dropping the tertiary provider from the recovery path.
         names = [configured_primary, configured_secondary]
-        return [
-            self.providers[name]
-            for name in names
-            if name in self.providers
-        ]
+        names.extend(name for name in self.providers if name not in names)
+        return [self.providers[name] for name in names if name in self.providers]
 
     async def get_instruments(self) -> list[Instrument]:
         for provider in self.ordered_providers():
