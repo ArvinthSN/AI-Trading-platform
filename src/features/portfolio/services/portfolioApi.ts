@@ -63,13 +63,12 @@ export async function getPortfolioAnalysis(
     }
   }
   const value = <T,>(index: number): T | null => {
-    const result = requests[index];
-    return result.status === "fulfilled" ? result.value as T : null;
+    const result = requests[index]!;
+    return "value" in result ? result.value as T : null;
   };
+  const labels = ["Summary", "Performance", "Holdings", "P&L calendar", "Recent trades", "Agent consistency"];
   const unavailable = requests.flatMap((result, index) =>
-    result.status === "rejected"
-      ? [["Summary", "Performance", "Holdings", "P&L calendar", "Recent trades", "Agent consistency"][index]]
-      : [],
+    result.status === "rejected" ? [labels[index] ?? "Unknown"] : [],
   );
   return {
     summary: value<PortfolioAnalysisData["summary"]>(0),
