@@ -156,7 +156,9 @@ export function PortfolioPage() {
   const currency = data?.summary?.currency ?? "USD";
   const selectedDay = data?.calendar.find((day) => day.date.slice(0, 10) === selectedDate);
   const summary = data?.summary;
-  const pnl = summary ? summary.realizedPnl + summary.unrealizedPnl : null;
+  const pnl = summary?.realizedPnl != null && summary.unrealizedPnl != null
+    ? summary.realizedPnl + summary.unrealizedPnl
+    : null;
   const hasAnyData = Boolean(summary || data?.performance.length || data?.holdings.length || data?.calendar.length || data?.trades.length);
 
   return <main className="portfolio-page">
