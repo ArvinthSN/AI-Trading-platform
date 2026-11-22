@@ -140,7 +140,7 @@ async def portfolio_holdings(
         return [
             {
                 "asset": item["asset"],
-                "symbol": f'{item["asset"]}USDT',
+                "symbol": item["asset"],
                 "quantity": float(item.get("free", 0))
                 + float(item.get("locked", 0)),
                 "average_entry_price": None,
