@@ -22,6 +22,16 @@ class PaperPortfolioProvider:
         user_id: str,
         params: dict[str, str] | None = None,
     ):
+        if resource not in {"summary", "performance", "holdings", "calendar", "trades"}:
+            raise ProviderUnavailable(
+                "Paper Trading Engine",
+                "Unsupported paper portfolio resource.",
+            )
+        if not user_id.strip():
+            raise ProviderUnavailable(
+                "Paper Trading Engine",
+                "An authenticated user identifier is required.",
+            )
         if not self.configured:
             raise ProviderUnavailable(
                 "Paper Trading Engine",
