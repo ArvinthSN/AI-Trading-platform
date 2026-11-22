@@ -1,3 +1,5 @@
+export type PortfolioSource = "paper" | "binance";
+
 export type PortfolioRange = "7D" | "30D" | "90D" | "1Y" | "ALL";
 
 export interface PortfolioSummary {
