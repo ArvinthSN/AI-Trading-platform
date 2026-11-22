@@ -88,4 +88,5 @@ async def test_provider_router_uses_binance_before_kraken() -> None:
         assert [provider.name for provider in router.ordered_providers()] == [
             "binance",
             "kraken",
+            "coinbase",
         ]
