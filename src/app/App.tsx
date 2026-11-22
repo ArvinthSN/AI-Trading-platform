@@ -8,6 +8,7 @@ import { MarketWorkspaceProvider } from "../features/market-intelligence/hooks/u
 import { OverviewPage } from "../features/overview/pages/OverviewPage";
 import { AppShell } from "./AppShell";
 import { AgentsPage } from "../features/agents/pages/AgentsPage";
+import { PortfolioPage } from "../features/portfolio/pages/PortfolioPage";
 
 function UnavailablePage() {
   const { pathname } = useLocation();
@@ -66,6 +67,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<OverviewPage />} />
           <Route path="/agents" element={<AgentsPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/market-intelligence" element={<MarketWorkspaceProvider><MarketIntelligenceLayout /></MarketWorkspaceProvider>}>
             <Route index element={<MarketIntelligencePage />} />
             <Route path="global" element={<GlobalIntelligencePage />} />
