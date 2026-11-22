@@ -7,6 +7,14 @@ from app.core.auth import CurrentUser
 from app.core.errors import ProviderUnavailable
 from app.domains.portfolio.providers.binance import BinancePortfolioProvider
 from app.domains.portfolio.providers.paper_engine import PaperPortfolioProvider
+from app.domains.portfolio.schemas import (
+    PortfolioCalendarDay,
+    PortfolioHolding,
+    PortfolioPoint,
+    PortfolioSources,
+    PortfolioSummary,
+    PortfolioTrade,
+)
 
 router = APIRouter()
 Source = Literal["paper", "binance"]
@@ -26,7 +34,7 @@ def _raise_unavailable(error: ProviderUnavailable) -> None:
     raise HTTPException(status_code=503, detail=str(error)) from error
 
 
-@router.get("/sources")
+@router.get("/sources", response_model=PortfolioSources)
 async def portfolio_sources(request: Request, user: CurrentUser) -> dict:
     paper, binance = _providers(request)
     return {
@@ -38,7 +46,7 @@ async def portfolio_sources(request: Request, user: CurrentUser) -> dict:
     }
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=PortfolioSummary)
 async def portfolio_summary(
     request: Request,
     user: CurrentUser,
@@ -84,7 +92,7 @@ async def portfolio_summary(
         _raise_unavailable(error)
 
 
-@router.get("/performance")
+@router.get("/performance", response_model=list[PortfolioPoint])
 async def portfolio_performance(
     request: Request,
     user: CurrentUser,
@@ -111,7 +119,7 @@ async def portfolio_performance(
         _raise_unavailable(error)
 
 
-@router.get("/holdings")
+@router.get("/holdings", response_model=list[PortfolioHolding])
 async def portfolio_holdings(
     request: Request,
     user: CurrentUser,
@@ -149,7 +157,7 @@ async def portfolio_holdings(
         _raise_unavailable(error)
 
 
-@router.get("/calendar")
+@router.get("/calendar", response_model=list[PortfolioCalendarDay])
 async def portfolio_calendar(
     request: Request,
     user: CurrentUser,
@@ -174,7 +182,7 @@ async def portfolio_calendar(
         _raise_unavailable(error)
 
 
-@router.get("/trades")
+@router.get("/trades", response_model=list[PortfolioTrade])
 async def portfolio_trades(
     request: Request,
     user: CurrentUser,
