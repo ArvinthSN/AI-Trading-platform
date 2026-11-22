@@ -29,7 +29,11 @@ class BinancePortfolioProvider:
                 "Binance account",
                 "Read-only Binance API credentials are not configured on the server.",
             )
-        query = {**(params or {}), "recvWindow": str(self._recv_window), "timestamp": str(int(time.time() * 1000))}
+        query = {
+            **(params or {}),
+            "recvWindow": str(self._recv_window),
+            "timestamp": str(int(time.time() * 1000)),
+        }
         query_string = urlencode(query)
         signature = hmac.new(
             self._api_secret.encode(), query_string.encode(), hashlib.sha256
@@ -42,12 +46,16 @@ class BinancePortfolioProvider:
             response.raise_for_status()
             return response.json()
         except (httpx.HTTPError, ValueError) as error:
-            raise ProviderUnavailable("Binance account", "Binance account request failed.") from error
+            raise ProviderUnavailable(
+                "Binance account", "Binance account request failed."
+            ) from error
 
     async def account(self) -> dict:
         payload = await self._signed_get("/api/v3/account", {"omitZeroBalances": "true"})
         if not isinstance(payload, dict) or not isinstance(payload.get("balances"), list):
-            raise ProviderUnavailable("Binance account", "Binance returned an invalid account payload.")
+            raise ProviderUnavailable(
+                "Binance account", "Binance returned an invalid account payload."
+            )
         return payload
 
     async def trades(self, symbol: str, limit: int = 500) -> list[dict]:
