@@ -2,6 +2,9 @@ import type { PortfolioAnalysisData, PortfolioRange, PortfolioSource } from "../
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 
+const nullableNumber = (value: unknown): number | null =>
+  typeof value === "number" && Number.isFinite(value) ? value : null;
+
 export class PortfolioApiError extends Error {
   constructor(message: string, public readonly status: number) {
     super(message);
@@ -72,9 +75,9 @@ export async function getPortfolioAnalysis(
     result.status === "rejected" ? [labels[index] ?? "Unknown"] : [],
   );
   return {
-    summary: (() => { const item = value<Record<string, unknown>>(0); return item ? { currency: String(item.currency ?? "USDT"), investedCapital: (item.investedCapital ?? item.invested_capital ?? null) as number | null, currentValue: (item.currentValue ?? item.current_value ?? null) as number | null, realizedPnl: (item.realizedPnl ?? item.realized_pnl ?? null) as number | null, unrealizedPnl: (item.unrealizedPnl ?? item.unrealized_pnl ?? null) as number | null, totalReturnPct: (item.totalReturnPct ?? item.total_return_pct ?? null) as number | null, maxDrawdownPct: (item.maxDrawdownPct ?? item.max_drawdown_pct ?? null) as number | null, asOf: String(item.asOf ?? item.as_of ?? new Date().toISOString()) } : null; })(),
+    summary: (() => { const item = value<Record<string, unknown>>(0); return item ? { currency: String(item.currency ?? "USDT"), investedCapital: nullableNumber(item.investedCapital ?? item.invested_capital), currentValue: nullableNumber(item.currentValue ?? item.current_value), realizedPnl: nullableNumber(item.realizedPnl ?? item.realized_pnl), unrealizedPnl: nullableNumber(item.unrealizedPnl ?? item.unrealized_pnl), totalReturnPct: nullableNumber(item.totalReturnPct ?? item.total_return_pct), maxDrawdownPct: nullableNumber(item.maxDrawdownPct ?? item.max_drawdown_pct), asOf: String(item.asOf ?? item.as_of ?? "") } : null; })(),
     performance: value<PortfolioAnalysisData["performance"]>(1) ?? [],
-    holdings: (value<Array<Record<string, unknown>>>(2) ?? []).map((item) => ({ asset: String(item.asset ?? ""), symbol: String(item.symbol ?? ""), quantity: Number(item.quantity ?? 0), averageEntryPrice: (item.averageEntryPrice ?? item.average_entry_price ?? null) as number | null, currentPrice: (item.currentPrice ?? item.current_price ?? null) as number | null, marketValue: (item.marketValue ?? item.market_value ?? null) as number | null, unrealizedPnl: Number(item.unrealizedPnl ?? item.unrealized_pnl ?? 0), unrealizedPnlPct: Number(item.unrealizedPnlPct ?? item.unrealized_pnl_pct ?? 0), allocationPct: Number(item.allocationPct ?? item.allocation_pct ?? 0) })),
+    holdings: (value<Array<Record<string, unknown>>>(2) ?? []).map((item) => ({ asset: String(item.asset ?? ""), symbol: String(item.symbol ?? ""), quantity: Number(item.quantity ?? 0), averageEntryPrice: nullableNumber(item.averageEntryPrice ?? item.average_entry_price), currentPrice: nullableNumber(item.currentPrice ?? item.current_price), marketValue: nullableNumber(item.marketValue ?? item.market_value), unrealizedPnl: nullableNumber(item.unrealizedPnl ?? item.unrealized_pnl), unrealizedPnlPct: nullableNumber(item.unrealizedPnlPct ?? item.unrealized_pnl_pct), allocationPct: nullableNumber(item.allocationPct ?? item.allocation_pct) })),
     calendar: (value<Array<Record<string, unknown>>>(3) ?? []).map((item) => ({ date: String(item.date ?? ""), realizedPnl: Number(item.realizedPnl ?? item.realized_pnl ?? 0), unrealizedPnl: Number(item.unrealizedPnl ?? item.unrealized_pnl ?? 0), tradeCount: Number(item.tradeCount ?? item.trade_count ?? 0) })),
     trades: (value<Array<Record<string, unknown>>>(4) ?? []).map((item) => ({ id: String(item.id ?? ""), executedAt: String(item.executedAt ?? item.executed_at ?? ""), symbol: String(item.symbol ?? ""), side: item.side === "sell" ? "sell" as const : "buy" as const, quantity: Number(item.quantity ?? 0), price: Number(item.price ?? 0), realizedPnl: (item.realizedPnl ?? item.realized_pnl ?? null) as number | null, source: item.source === "agent" || item.source === "strategy" ? item.source : "manual" as const })),
     agentConsistency: value<PortfolioAnalysisData["agentConsistency"]>(5) ?? [],
