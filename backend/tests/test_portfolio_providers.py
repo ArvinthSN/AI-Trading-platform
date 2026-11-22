@@ -1,6 +1,6 @@
-from urllib.parse import parse_qs, urlparse
 import hashlib
 import hmac
+from urllib.parse import parse_qs, urlparse
 
 import httpx
 import pytest
@@ -31,7 +31,10 @@ async def test_binance_account_request_is_signed_and_read_only() -> None:
         ).hexdigest()
         assert hmac.compare_digest(signature, expected)
         assert params["omitZeroBalances"] == ["true"]
-        return httpx.Response(200, json={"balances": [{"asset": "USDT", "free": "25", "locked": "0"}]})
+        return httpx.Response(
+            200,
+            json={"balances": [{"asset": "USDT", "free": "25", "locked": "0"}]},
+        )
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         provider = BinancePortfolioProvider(client, settings)
